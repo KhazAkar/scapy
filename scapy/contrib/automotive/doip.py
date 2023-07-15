@@ -333,16 +333,19 @@ class DoIPSocket(StreamSocket):
             DoIP(payload_type=0x5, activation_type=activation_type,
                  source_address=source_address, reserved_oem=reserved_oem),
             verbose=False, timeout=1)
-        if resp and resp.payload_type == 0x6 and \
+        if resp:
+            if resp.payload_type == 0x6 and \
                 resp.routing_activation_response == 0x10:
-            self.target_address = target_address or \
-                resp.logical_address_doip_entity
-            log_automotive.info(
-                "Routing activation successful! Target address set to: 0x%x",
-                self.target_address)
+                self.target_address = target_address or \
+                    resp.logical_address_doip_entity
+                log_automotive.info(
+                    "Routing activation successful! Target address set to: 0x%x",
+                    self.target_address)
+            else:
+                log_automotive.error(
+                    "Routing activation failed! Response: %s", repr(resp.routing_activation_response))
         else:
-            log_automotive.error(
-                "Routing activation failed! Response: %s", repr(resp))
+            log_automotive.error("Target did not respond to routing activation request.")
 
 
 class DoIPSocket6(DoIPSocket):
